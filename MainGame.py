@@ -1,4 +1,5 @@
 import random
+import time
 
 rooms = [
     {
@@ -417,6 +418,10 @@ rooms = [
          "“You are, and forever will be, unfinished…”"
 
          # No needed actions, END OF GAME
+     },
+     {
+         # 38; White Chapel have items actions
+         "actions":["Accept your fate", "Deny your fate"]
      }
 ]
 
@@ -557,8 +562,6 @@ whitechapel_have_items = {
     "Yet you were the cause of their demise.\n\n"
     "She comforts you with soft pats on your back, and you don't realize that She is leading you out of the White Chapel.\n\n"
     "\tHER: The black chapel on the white snow is your F A T E.",
-    
-    "have actions":["Accept your fate", "Deny your fate"],
 
     "have jacket":"You take out the pack of cigarettes and remember that you don't have a lighter on you. Despite knowing this,"
     " you still attempt to search through your pockets for one.",
@@ -566,7 +569,7 @@ whitechapel_have_items = {
     "have not jacket":"You find a stray cigarette, searching for a lighter. You click your tongue in disappointment, slouching against the back of the bench. You"
     " then notice the lit up candle at the altar and nearly grimace.",
 
-    "have not":"YOU: That'd be kind of rude, wouldn't it? Using the flame of the candle on the altar to light up my cigarette for a moment of relaxation.\n\n"
+    "have not":"\tYOU: That'd be kind of rude, wouldn't it? Using the flame of the candle on the altar to light up my cigarette for a moment of relaxation.\n\n"
     "You take a moment to contemplate.\n\n"
     "\tYOU: Fuck it, I'll do it anyway.\n\n"
     "You don't know where this bravery is coming from, but you find your feet dragging themselves to the altar and bending over with the cigarette hanging in your"
@@ -732,9 +735,13 @@ def print_list(list):
         input()
 
 # Instructions
-print("INSTRUCTIONS: To get the next line of description or dialogue, please simply press ENTER.\n"
-      "All player commands are case sensitive. Make sure to write the exact case sensitive command.\n\n")
+print("INSTRUCTIONS:\n"
+      "\t* To get the next line of description or dialogue, please simply press ENTER.\n"
+      "\t* All player commands must be written exactly, although it isn't case sensitive. If you misspell a word,\n\tit will not recognize the command.\n"
+      "\t* If you wish to quit, type \"QUIT\" when prompted to put in an input.\n\n"
+      "Press ENTER to start.\n\n\n")
 input()
+start_time = time.time()
 
 # Starting room
 print_split_text()
@@ -745,30 +752,30 @@ running = True
 while running:
     player_input = input("\n> ")
 
-    match player_input:
-        case "Look out the window":
+    match player_input.lower():
+        case "look out the window":
             current_room = 1
             print()
             print_split_text()
             getActions(rooms)
-        case "Look in the closet":
+        case "look in the closet":
             current_room = 2
             print()
             print_split_text()
             getActions(rooms)
-        case "Take the jacket":
+        case "take the jacket":
             current_room = 3
             print()
             print_split_text()
             inventory.append("JACKET")
-            print(">>> JACKET has been added to your inventory.\n\n")
+            print(">>> JACKET has been added to your inventory.\n")
             getActions(rooms)
-        case "Search the jacket":
+        case "search the jacket":
             current_room = 4
             print()
             print_split_text()
             getActions(rooms)
-        case "Head out the room":
+        case "head out the room":
             current_room = 5
             state = 1
             print()
@@ -776,36 +783,36 @@ while running:
             getActions(rooms)
         
         # Go back to the starting room if you want
-        case "Go back to the room":
+        case "go back to the room":
             current_room = 0
             print()
             getActions(rooms)
         # Go back to the hallway
-        case "Go back to the hallway":
+        case "go back to the hallway":
             current_room = 5
             print()
             getActions(rooms)
-        case "Open the door on the right":
+        case "open the door on the right":
             current_room = 6
             print()
             print_split_text()
             getActions(rooms)
-        case "Search the bathroom":
+        case "search the bathroom":
             current_room = 7
             print()
             print_split_text()
             getActions(rooms)
-        case "Open the door on the left":
+        case "open the door on the left":
             current_room = 8
             print()
             print_split_text()
             getActions(rooms)
-        case "Search the office":
+        case "search the office":
             current_room = 9
             print()
             print_split_text()
             getActions(rooms)
-        case "Yes":
+        case "yes":
             # Case for "Search the office, take the burned picture?"
             if current_room == 9:
                 current_room = 10
@@ -840,7 +847,7 @@ while running:
                 getActions(rooms)
             else:
                 break
-        case "No":
+        case "no":
             # Case for "Search the office, take the burned picture?"
             if current_room == 9:
                 current_room = 11
@@ -861,38 +868,38 @@ while running:
                 running = False
             else:
                 break
-        case "Enter the living room":
+        case "enter the living room":
             current_room = 12
             print()
             print_split_text()
             getActions(rooms)
         # Go back to the living room if you want
-        case "Go back to the living room":
+        case "go back to the living room":
             current_room = 12
             print()
             getActions(rooms)
-        case "Go to the kitchen":
+        case "go to the kitchen":
             current_room = 13
             print()
             print_split_text()
             getActions(rooms)
-        case "Search the kitchen":
+        case "search the kitchen":
             current_room = 14
             print()
             print_split_text()
             getActions(rooms)
-        case "Go to the backyard":
+        case "go to the backyard":
             current_room = 15
             print()
             print_split_text()
             getActions(rooms)
-        case "Head outside and into town":
+        case "head outside and into town":
             current_room = 16
             print()
             print_split_text()
             getActions(rooms)
         
-        case "Explore the town":
+        case "explore the town":
             current_room = 17
             print()
             print_split_text()
@@ -900,20 +907,20 @@ while running:
         
         # Take the newspaper article? in previous "yes" and "no" cases.
 
-        case "Go back to the town square":
+        case "go back to the town square":
             current_room = 16
             print()
             getActions(rooms)
-        case "Go to the church":
+        case "go to the church":
             current_room = 20
             print()
             print_split_text()
             getActions(rooms)
         
         # START OF ACT 1, THE RED CHAPEL
-        case "Take a break":
+        case "take a break":
             chance = random.random()
-            if chance > 0.5:
+            if chance > 0.3:
                 current_room = 24
                 print()
                 print_split_text()
@@ -923,7 +930,7 @@ while running:
                 print()
                 print_split_text()
                 running = False
-        case "Enter the church":
+        case "enter the church":
             if current_room == 24:
                 current_room = 26
                 print()
@@ -953,8 +960,9 @@ while running:
                     inventory.append("3/3 OF BURNED PHOTO")
                     text = whitechapel_have_items["have"].split("\n\n")
                     print_list(text)
-                    for x in range(len(whitechapel_have_items["have actions"])):
-                        print("- ", whitechapel_have_items["have actions"][x])
+                    print()
+                    current_room = 38
+                    getActions(rooms)
                 else:
                     if "JACKET" in inventory:
                         text = whitechapel_have_items["have jacket"].split("\n\n")
@@ -970,7 +978,7 @@ while running:
                     print()
                     print_split_text()
                     running = False
-        case "Wait for an invitation":
+        case "wait for an invitation":
             if current_room == 24:
                 current_room = 27
                 print()
@@ -1000,8 +1008,9 @@ while running:
                     inventory.append("3/3 OF BURNED PHOTO")
                     text = whitechapel_have_items["have"].split("\n\n")
                     print_list(text)
-                    for x in range(len(whitechapel_have_items["have actions"])):
-                        print("- ", whitechapel_have_items["have actions"][x])
+                    print()
+                    current_room = 38
+                    getActions(rooms)
                 else:
                     if "JACKET" in inventory:
                         text = whitechapel_have_items["have jacket"].split("\n\n")
@@ -1017,7 +1026,7 @@ while running:
                     print()
                     print_split_text()
                     running = False
-        case "Turn away":
+        case "turn away":
             if current_room == 24:
                 current_room = 28
                 print()
@@ -1029,27 +1038,32 @@ while running:
                 print_split_text()
                 running = False
         
-        case "Walk forward":
+        case "walk forward":
             current_room = 30
             print()
             print_split_text()
             getActions(rooms)
-        case "Turn back around":
+        case "turn back around":
             current_room = 31
             print()
             print_split_text()
             running = False
-        case "Accept your fate":
+        case "accept your fate":
             text = blackchapel_have_items["have"].split("\n\n")
             print_list(text)
             running = False
-        case "Deny your fate":
+        case "deny your fate":
             current_room = 35
             print()
             print_split_text()
+            running = False
+        
+        case "quit":
+            print("Exiting the game now.")
             running = False
 
 
         case _:
             print("\n\nUnknown command. Try again.\n\n")
             getActions(rooms)
+print("\n\nRUNTIME: %s seconds" % (time.time() - start_time))
