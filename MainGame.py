@@ -2,6 +2,26 @@ import random
 import time
 import psutil
 
+actions_sequence = [
+    "Head out the room",
+    "Enter the living room",
+    "Go to the kitchen",
+    "Head outside and into town",
+    "Go to the church",
+    "Yes",
+    "Take a break",
+    "Enter the church",  # For consistency, choosing "Enter the church"
+    "Walk forward",
+    "Enter the church"   # Again, choosing "Enter the church"
+]
+
+# Define a function to get the next action from the sequence
+def get_next_action():
+    if actions_sequence:
+        return actions_sequence.pop(0)
+    else:
+        return "quit"
+
 rooms = [
     {
         # 0; Beginning room, ACT 1: SCENE 1
@@ -713,6 +733,8 @@ blackchapel_have_items = {
     "You won't be able to reach their level."
 }
 
+
+
 current_room = 0
 inventory = []
 
@@ -745,7 +767,9 @@ print("INSTRUCTIONS:\n"
 input()
 # Start CPU monitoring
 initial_cpu = psutil.cpu_times()
+#gets the CPU times specifically for the current process
 initial_process_cpu = psutil.Process().cpu_times()
+# records the time when the game starts
 start_time = time.time()
 
 
@@ -756,7 +780,7 @@ getActions(rooms)
 # Main game loop
 running = True
 while running:
-    player_input = input("\n> ")
+    player_input = get_next_action()  
 
     match player_input.lower():
         case "look out the window":
@@ -925,17 +949,10 @@ while running:
         
         # START OF ACT 1, THE RED CHAPEL
         case "take a break":
-            chance = random.random()
-            if chance > 0.3:
-                current_room = 24
-                print()
-                print_split_text()
-                getActions(rooms)
-            else:
-                current_room = 25
-                print()
-                print_split_text()
-                running = False
+            current_room = 24
+            print()
+            print_split_text()
+            getActions(rooms)
         case "enter the church":
             if current_room == 24:
                 current_room = 26
@@ -1072,12 +1089,17 @@ while running:
         case _:
             print("\n\nUnknown command. Try again.\n\n")
             getActions(rooms)
+
+    if player_input == "quit":
+        print("Automated sequence complete. Exiting the game now.")
+        running = False
 # End CPU monitoring
 end_time = time.time()
 final_cpu = psutil.cpu_times()
 final_process_cpu = psutil.Process().cpu_times()
 
 # Calculate CPU usage
+# Calculates the total CPU time available system-wide during the game's execution
 total_cpu_time = sum(final_cpu) - sum(initial_cpu)
 process_cpu_time = (final_process_cpu.user - initial_process_cpu.user) + \
                    (final_process_cpu.system - initial_process_cpu.system)
@@ -1090,4 +1112,3 @@ print(f"CPU time used by script: {process_cpu_time:.2f} seconds")
 print(f"Total CPU time available: {total_cpu_time:.2f} seconds")
 print(f"CPU usage percentage: {cpu_usage_percentage:.2f}%")
 print("\n\nRUNTIME: %s seconds" % (time.time() - start_time))
-
