@@ -1,5 +1,6 @@
 import random
 import time
+import psutil
 
 rooms = [
     {
@@ -734,6 +735,7 @@ def print_list(list):
         print(list[x])
         input()
 
+
 # Instructions
 print("INSTRUCTIONS:\n"
       "\t* To get the next line of description or dialogue, please simply press ENTER.\n"
@@ -741,7 +743,11 @@ print("INSTRUCTIONS:\n"
       "\t* If you wish to quit, type \"QUIT\" when prompted to put in an input.\n\n"
       "Press ENTER to start.\n\n\n")
 input()
+# Start CPU monitoring
+initial_cpu = psutil.cpu_times()
+initial_process_cpu = psutil.Process().cpu_times()
 start_time = time.time()
+
 
 # Starting room
 print_split_text()
@@ -1066,4 +1072,22 @@ while running:
         case _:
             print("\n\nUnknown command. Try again.\n\n")
             getActions(rooms)
+# End CPU monitoring
+end_time = time.time()
+final_cpu = psutil.cpu_times()
+final_process_cpu = psutil.Process().cpu_times()
+
+# Calculate CPU usage
+total_cpu_time = sum(final_cpu) - sum(initial_cpu)
+process_cpu_time = (final_process_cpu.user - initial_process_cpu.user) + \
+                   (final_process_cpu.system - initial_process_cpu.system)
+cpu_usage_percentage = (process_cpu_time / total_cpu_time) * 100
+
+# Print CPU usage and runtime
+print("\n\nRUNTIME: %s seconds" % (end_time - start_time))
+print(f"Total elapsed time: {end_time - start_time:.2f} seconds")
+print(f"CPU time used by script: {process_cpu_time:.2f} seconds")
+print(f"Total CPU time available: {total_cpu_time:.2f} seconds")
+print(f"CPU usage percentage: {cpu_usage_percentage:.2f}%")
 print("\n\nRUNTIME: %s seconds" % (time.time() - start_time))
+
