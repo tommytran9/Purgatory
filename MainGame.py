@@ -1,6 +1,10 @@
-import random
+
 import time
 import psutil
+
+
+
+
 
 rooms = [
     {
@@ -713,6 +717,8 @@ blackchapel_have_items = {
     "You won't be able to reach their level."
 }
 
+
+
 current_room = 0
 inventory = []
 
@@ -735,6 +741,31 @@ def print_list(list):
         print(list[x])
         input()
 
+def log_event(event):
+    with open("game_log.txt", "a") as log_file:
+        log_file.write(f"{event} - {time.asctime()}\n")
+
+
+def save_game(current_room, inventory):
+    try:
+        with open("game_save.txt", "w") as file:
+            save_data = {
+                "current_room": current_room,
+                "inventory": inventory
+            }
+            file.write(str(save_data))
+        print("Game saved successfully.")
+
+        # Ask the player if they want to quit
+        quit_choice = input("Do you want to quit the game? (yes/no): ").lower()
+        if quit_choice == "yes":
+            return True  # Indicate the player wants to quit
+        else:
+            return False
+    except IOError:
+        print("Failed to save game.")
+        return False
+
 
 # Instructions
 print("INSTRUCTIONS:\n"
@@ -742,21 +773,50 @@ print("INSTRUCTIONS:\n"
       "\t* All player commands must be written exactly, although it isn't case sensitive. If you misspell a word,\n\tit will not recognize the command.\n"
       "\t* If you wish to quit, type \"QUIT\" when prompted to put in an input.\n\n"
       "Press ENTER to start.\n\n\n")
+
 input()
+def load_game():
+    try:
+        with open("game_save.txt", "r") as file:
+            save_data = eval(file.read())
+            return save_data["current_room"], save_data["inventory"]
+    except IOError:
+        print("No saved game found or failed to load.")
+        return 0, []  # Default starting room and empty inventory
+    log_event("Game loaded successfully")
+
+# Example usage at game start
+if input("Load saved game? (yes/no): ").lower() == "yes":
+    current_room, inventory = load_game()
+else:
+    current_room, inventory = 0, []  # Starting values
+
 # Start CPU monitoring
 initial_cpu = psutil.cpu_times()
+#gets the CPU times specifically for the current process
 initial_process_cpu = psutil.Process().cpu_times()
+# records the time when the game starts
 start_time = time.time()
 
 
 # Starting room
 print_split_text()
 getActions(rooms)
-
+log_event("Game started")
 # Main game loop
 running = True
 while running:
-    player_input = input("\n> ")
+    player_input = input()  
+    log_event(f"Player input: {player_input}")
+
+    if player_input == "save":
+        wants_to_quit = save_game(current_room, inventory)
+        if wants_to_quit:
+            print("Quitting game...")
+            break  # Exit the loop to end the game
+        else:
+            continue  # Continue with the game loop
+
 
     match player_input.lower():
         case "look out the window":
@@ -774,6 +834,7 @@ while running:
             print()
             print_split_text()
             inventory.append("JACKET")
+            log_event("JACKET added to inventory")
             print(">>> JACKET has been added to your inventory.\n")
             getActions(rooms)
         case "search the jacket":
@@ -824,6 +885,7 @@ while running:
                 current_room = 10
                 print()
                 inventory.append("1/3 OF BURNED PHOTO")
+                log_event("1/3 OF BURNED PHOTO added to inventory")
                 print(">>> 1/3 OF BURNED PHOTO has been added to your inventory.\n\n")
                 print_split_text()
                 getActions(rooms)
@@ -832,6 +894,7 @@ while running:
                 current_room = 18
                 print()
                 inventory.append("NEWSPAPER ARTICLE")
+                log_event("NEWSPAPER ARTICLE added to inventory")
                 print(">>> NEWSPAPER ARTICLE has been added to your inventory.\n\n")
                 print_split_text()
                 getActions(rooms)
@@ -925,17 +988,10 @@ while running:
         
         # START OF ACT 1, THE RED CHAPEL
         case "take a break":
-            chance = random.random()
-            if chance > 0.3:
-                current_room = 24
-                print()
-                print_split_text()
-                getActions(rooms)
-            else:
-                current_room = 25
-                print()
-                print_split_text()
-                running = False
+            current_room = 24
+            print()
+            print_split_text()
+            getActions(rooms)
         case "enter the church":
             if current_room == 24:
                 current_room = 26
@@ -943,6 +999,7 @@ while running:
                 print_split_text()
                 if "JACKET" and "1/3 OF BURNED PHOTO" and "NEWSPAPER ARTICLE" in inventory:
                     inventory.append("2/3 OF BURNED PHOTO")
+                    log_event("2/3 OF BURNED PHOTO added to inventory")
                     text = redchapel_have_items["have"].split("\n\n")
                     print_list(text)
                 else:
@@ -964,6 +1021,7 @@ while running:
                 print_split_text()
                 if "JACKET" and "1/3 OF BURNED PHOTO" and "NEWSPAPER ARTICLE" and "2/3 OF BURNED PHOTO" in inventory:
                     inventory.append("3/3 OF BURNED PHOTO")
+                    log_event("3/3 OF BURNED PHOTO added to inventory")
                     text = whitechapel_have_items["have"].split("\n\n")
                     print_list(text)
                     print()
@@ -991,6 +1049,7 @@ while running:
                 print_split_text()
                 if "JACKET" and "1/3 OF BURNED PHOTO" and "NEWSPAPER ARTICLE" in inventory:
                     inventory.append("2/3 OF BURNED PHOTO")
+                    log_event("2/3 OF BURNED PHOTO added to inventory")
                     text = redchapel_have_items["have"].split("\n\n")
                     print_list(text)
                 else:
@@ -1012,6 +1071,7 @@ while running:
                 print_split_text()
                 if "JACKET" and "1/3 OF BURNED PHOTO" and "NEWSPAPER ARTICLE" and "2/3 OF BURNED PHOTO" in inventory:
                     inventory.append("3/3 OF BURNED PHOTO")
+                    log_event("3/3 OF BURNED PHOTO added to inventory")
                     text = whitechapel_have_items["have"].split("\n\n")
                     print_list(text)
                     print()
@@ -1072,12 +1132,19 @@ while running:
         case _:
             print("\n\nUnknown command. Try again.\n\n")
             getActions(rooms)
+
+    if player_input == "quit":
+        print("Automated sequence complete. Exiting the game now.")
+        running = False
+
+log_event("Game ended")
 # End CPU monitoring
 end_time = time.time()
 final_cpu = psutil.cpu_times()
 final_process_cpu = psutil.Process().cpu_times()
 
 # Calculate CPU usage
+# Calculates the total CPU time available system-wide during the game's execution
 total_cpu_time = sum(final_cpu) - sum(initial_cpu)
 process_cpu_time = (final_process_cpu.user - initial_process_cpu.user) + \
                    (final_process_cpu.system - initial_process_cpu.system)
@@ -1089,5 +1156,3 @@ print(f"Total elapsed time: {end_time - start_time:.2f} seconds")
 print(f"CPU time used by script: {process_cpu_time:.2f} seconds")
 print(f"Total CPU time available: {total_cpu_time:.2f} seconds")
 print(f"CPU usage percentage: {cpu_usage_percentage:.2f}%")
-print("\n\nRUNTIME: %s seconds" % (time.time() - start_time))
-
