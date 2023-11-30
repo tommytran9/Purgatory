@@ -1,10 +1,7 @@
-
+import random
 import time
 import psutil
-
-
-
-
+import os
 
 rooms = [
     {
@@ -717,10 +714,102 @@ blackchapel_have_items = {
     "You won't be able to reach their level."
 }
 
+shortest_knowing = [
+    "Head out the room",
+    "Enter the living room",
+    "Go to the kitchen",
+    "Head outside and into town",
+    "Go to the church",
+    "Yes",
+    "Take a break",
+    "Enter the church",  # For consistency, choosing "Enter the church"
+    "Walk forward",
+    "Enter the church"   # Again, choosing "Enter the church"
+]
 
+technical_shortest = [
+    "Head out the room",
+    "Enter the living room",
+    "Go to the kitchen",
+    "Head outside and into town",
+    "Go to the church",
+    "No"
+]
+
+longest_knowing = [
+    "Look out the window",
+    "Look in the closet",
+    "Take the jacket",
+    "Search the jacket",
+    "Head out the room",
+    "Open the door on the right",
+    "Search the bathroom",
+    "Go back to the hallway",
+    "Open the door on the left",
+    "Search the office",
+    "Yes",
+    "Enter the living room",
+    "Go to the backyard",
+    "Go back to the living room",
+    "Go to the kitchen",
+    "Search the kitchen",
+    "Head outside and into town",
+    "Explore the town",
+    "Yes",
+    "Go back to the town square",
+    "Go to the church",
+    "Yes",
+    "Take a break",
+    "Enter the church",
+    "Walk forward",
+    "Enter the church",
+    "Accept your fate"
+]
+
+def get_next_action(sequence):
+    if sequence:
+        return sequence.pop(0)
+    else:
+        return "quit"
 
 current_room = 0
 inventory = []
+
+def create_save():
+    save_file_name = input("What is the name of your saved file? ")
+    save_file = open(save_file_name + ".txt", "w")
+    save_file.write(str(current_room) + "\n")
+    for i in range(len(inventory)):
+        save_file.write(inventory[i] + "\n")
+    print("Save file: \'", save_file_name, "\' successfully created.")
+    save_file.close()
+
+def load_game():
+    validation = True
+    while validation:
+        load_file_name = input("What is the name of your saved file? ")
+        path = "./" + load_file_name + ".txt"
+        if os.path.isfile(path):
+            load_file = open(load_file_name + ".txt", "r")
+            global current_room
+            current_room = int(load_file.readline())
+            global inventory
+            inventory = load_file.read().splitlines()
+            print("Save file: \'", load_file_name, "\' successfully loaded.\n\n")
+            load_file.close()
+            validation = False
+        else:
+            print("That file doesn't exist or cannot be found. Do you wish to try again? Y/N\n\n")
+            while True:
+                again = input("> ")
+                if again.lower() == "n":
+                    validation = False
+                    False
+                elif again.lower() == "y":
+                    validation = True
+                    False
+                else:
+                    print("Unknown command. Try again.\n\n")
 
 def getDesc(room):
     return(room[current_room]["description"])
@@ -741,82 +830,37 @@ def print_list(list):
         print(list[x])
         input()
 
-def log_event(event):
-    with open("game_log.txt", "a") as log_file:
-        log_file.write(f"{event} - {time.asctime()}\n")
-
-
-def save_game(current_room, inventory):
-    try:
-        with open("game_save.txt", "w") as file:
-            save_data = {
-                "current_room": current_room,
-                "inventory": inventory
-            }
-            file.write(str(save_data))
-        print("Game saved successfully.")
-
-        # Ask the player if they want to quit
-        quit_choice = input("Do you want to quit the game? (yes/no): ").lower()
-        if quit_choice == "yes":
-            return True  # Indicate the player wants to quit
-        else:
-            return False
-    except IOError:
-        print("Failed to save game.")
-        return False
-
-
 # Instructions
 print("INSTRUCTIONS:\n"
       "\t* To get the next line of description or dialogue, please simply press ENTER.\n"
-      "\t* All player commands must be written exactly, although it isn't case sensitive. If you misspell a word,\n\tit will not recognize the command.\n"
-      "\t* If you wish to quit, type \"QUIT\" when prompted to put in an input.\n\n"
-      "Press ENTER to start.\n\n\n")
-
-input()
-def load_game():
-    try:
-        with open("game_save.txt", "r") as file:
-            save_data = eval(file.read())
-            return save_data["current_room"], save_data["inventory"]
-    except IOError:
-        print("No saved game found or failed to load.")
-        return 0, []  # Default starting room and empty inventory
-    log_event("Game loaded successfully")
-
-# Example usage at game start
-if input("Load saved game? (yes/no): ").lower() == "yes":
-    current_room, inventory = load_game()
-else:
-    current_room, inventory = 0, []  # Starting values
+      "\t* All player commands must be written exactly, although it isn't case sensitive. If you misspell a word,\n\tit will not recognize the command.\n\n"
+      "\t* TO LOAD A GAME: simply type in \"LOAD\" to access your saved file.\n"
+      "\t* TO SAVE YOUR GAME: simply type in \"SAVE\" when prompted to put in an input.\n"
+      "\t* TO QUIT YOUR GAME: simply type in \"QUIT\" when prompted to put in an input.\n\t***NOTE: If you quit your game without saving, you will lose your progress.\n"
+      "Press ENTER to start a new game or LOAD to load a saved game.\n\n\n")
+game_state = input("> ")
 
 # Start CPU monitoring
 initial_cpu = psutil.cpu_times()
-#gets the CPU times specifically for the current process
+# Gets the CPU times specifically for the current process
 initial_process_cpu = psutil.Process().cpu_times()
 # records the time when the game starts
 start_time = time.time()
 
+if game_state.lower() == "load":
+    load_game()
+    print_split_text()
+    getActions(rooms)
+else:
+    # Starting room
+    print_split_text()
+    getActions(rooms)
 
-# Starting room
-print_split_text()
-getActions(rooms)
-log_event("Game started")
 # Main game loop
 running = True
 while running:
-    player_input = input()  
-    log_event(f"Player input: {player_input}")
-
-    if player_input == "save":
-        wants_to_quit = save_game(current_room, inventory)
-        if wants_to_quit:
-            print("Quitting game...")
-            break  # Exit the loop to end the game
-        else:
-            continue  # Continue with the game loop
-
+    player_input = input("\n> ")
+    # player_input = get_next_action(shortest_knowing)
 
     match player_input.lower():
         case "look out the window":
@@ -834,7 +878,6 @@ while running:
             print()
             print_split_text()
             inventory.append("JACKET")
-            log_event("JACKET added to inventory")
             print(">>> JACKET has been added to your inventory.\n")
             getActions(rooms)
         case "search the jacket":
@@ -885,7 +928,6 @@ while running:
                 current_room = 10
                 print()
                 inventory.append("1/3 OF BURNED PHOTO")
-                log_event("1/3 OF BURNED PHOTO added to inventory")
                 print(">>> 1/3 OF BURNED PHOTO has been added to your inventory.\n\n")
                 print_split_text()
                 getActions(rooms)
@@ -894,7 +936,6 @@ while running:
                 current_room = 18
                 print()
                 inventory.append("NEWSPAPER ARTICLE")
-                log_event("NEWSPAPER ARTICLE added to inventory")
                 print(">>> NEWSPAPER ARTICLE has been added to your inventory.\n\n")
                 print_split_text()
                 getActions(rooms)
@@ -988,10 +1029,17 @@ while running:
         
         # START OF ACT 1, THE RED CHAPEL
         case "take a break":
-            current_room = 24
-            print()
-            print_split_text()
-            getActions(rooms)
+            chance = random.random()
+            if chance > 0.3:
+                current_room = 24
+                print()
+                print_split_text()
+                getActions(rooms)
+            else:
+                current_room = 25
+                print()
+                print_split_text()
+                running = False
         case "enter the church":
             if current_room == 24:
                 current_room = 26
@@ -999,7 +1047,6 @@ while running:
                 print_split_text()
                 if "JACKET" and "1/3 OF BURNED PHOTO" and "NEWSPAPER ARTICLE" in inventory:
                     inventory.append("2/3 OF BURNED PHOTO")
-                    log_event("2/3 OF BURNED PHOTO added to inventory")
                     text = redchapel_have_items["have"].split("\n\n")
                     print_list(text)
                 else:
@@ -1021,7 +1068,6 @@ while running:
                 print_split_text()
                 if "JACKET" and "1/3 OF BURNED PHOTO" and "NEWSPAPER ARTICLE" and "2/3 OF BURNED PHOTO" in inventory:
                     inventory.append("3/3 OF BURNED PHOTO")
-                    log_event("3/3 OF BURNED PHOTO added to inventory")
                     text = whitechapel_have_items["have"].split("\n\n")
                     print_list(text)
                     print()
@@ -1049,7 +1095,6 @@ while running:
                 print_split_text()
                 if "JACKET" and "1/3 OF BURNED PHOTO" and "NEWSPAPER ARTICLE" in inventory:
                     inventory.append("2/3 OF BURNED PHOTO")
-                    log_event("2/3 OF BURNED PHOTO added to inventory")
                     text = redchapel_have_items["have"].split("\n\n")
                     print_list(text)
                 else:
@@ -1071,7 +1116,6 @@ while running:
                 print_split_text()
                 if "JACKET" and "1/3 OF BURNED PHOTO" and "NEWSPAPER ARTICLE" and "2/3 OF BURNED PHOTO" in inventory:
                     inventory.append("3/3 OF BURNED PHOTO")
-                    log_event("3/3 OF BURNED PHOTO added to inventory")
                     text = whitechapel_have_items["have"].split("\n\n")
                     print_list(text)
                     print()
@@ -1124,6 +1168,11 @@ while running:
             print_split_text()
             running = False
         
+
+        case "save":
+            create_save()
+            running = False
+
         case "quit":
             print("Exiting the game now.")
             running = False
@@ -1133,11 +1182,6 @@ while running:
             print("\n\nUnknown command. Try again.\n\n")
             getActions(rooms)
 
-    if player_input == "quit":
-        print("Automated sequence complete. Exiting the game now.")
-        running = False
-
-log_event("Game ended")
 # End CPU monitoring
 end_time = time.time()
 final_cpu = psutil.cpu_times()
