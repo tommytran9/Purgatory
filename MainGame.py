@@ -1,4 +1,4 @@
-#Automatic gameplay for shortest technical way to finish the game
+
 import random
 import time
 import psutil
